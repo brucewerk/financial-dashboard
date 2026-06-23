@@ -1,4 +1,3 @@
-// backend/package.json
 {
   "name": "backend",
   "version": "1.0.0",
@@ -12,7 +11,8 @@
     "import-data": "node import-full-data.js",
     "check-data": "node check-data.js",
     "import-annual": "node import-annual-direct.js",
-    "fix-data": "node fix-annual-data-final-correct.js"
+    "fix-data": "node fix-annual-data-final-correct.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
