@@ -8,7 +8,7 @@ dotenv.config();
 
 const app = express();
 
-// Configuração CORS - CORRIGIDA para aceitar o frontend
+// Configuração CORS
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
@@ -21,16 +21,9 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Permite requisições sem origin (Postman, curl, server-to-server)
     if (!origin) return callback(null, true);
-
-    // Permite qualquer subdomínio *.vercel.app
     const isVercel = /^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(origin);
-    const isAllowed = allowedOrigins.includes(origin) || isVercel;
-
-    console.log(`🔍 CORS - Origem: ${origin} - Permitido: ${isAllowed}`); // Log para debug
-
-    if (isAllowed) {
+    if (allowedOrigins.includes(origin) || isVercel) {
       callback(null, true);
     } else {
       callback(new Error(`CORS bloqueado para origem: ${origin}`));
@@ -40,12 +33,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// Log de requisições
-app.use((req, res, next) => {
-  console.log(`📨 ${req.method} ${req.url} - Origem: ${req.headers.origin}`);
-  next();
-});
 
 app.use(express.json());
 
@@ -58,25 +45,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/import', importRoutes);
 
-// Rota de teste
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API funcionando!' });
-});
-
-// Rota raiz (opcional)
-app.get('/', (req, res) => {
-  res.json({ 
-    status: 'online',
-    message: 'Backend API - Financial Dashboard',
-    version: '1.0.0',
-    endpoints: [
-      '/api/test',
-      '/api/auth/login',
-      '/api/auth/register',
-      '/api/finance/*',
-      '/api/import/*'
-    ]
-  });
 });
 
 // Conexão MongoDB
@@ -94,12 +64,10 @@ mongoose.connect(MONGODB_URI, {
 // Exportar para Vercel
 module.exports = app;
 
-// Iniciar servidor local (fora da Vercel)
+// Iniciar servidor local
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
-    console.log(`🌐 http://localhost:${PORT}`);
-    console.log(`🧪 Teste: http://localhost:${PORT}/api/test`);
   });
 }
