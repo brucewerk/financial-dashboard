@@ -255,7 +255,6 @@ const Transactions = () => {
         </Button>
       </Box>
 
-      {/* Cards de Totais do Ano Filtrado - COM CONTRASTE MELHORADO */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={4}>
           <Card sx={{ 
@@ -316,7 +315,6 @@ const Transactions = () => {
         </Grid>
       </Grid>
 
-      {/* Cards de Totais Acumulados - COM CONTRASTE MELHORADO */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={4}>
           <Card sx={{ 
@@ -377,7 +375,7 @@ const Transactions = () => {
         </Grid>
       </Grid>
 
-      {/* Filtros */}
+      {/* Filtros - RESPONSIVO */}
       <Paper sx={{ 
         p: 2, 
         mb: 3,
@@ -385,7 +383,7 @@ const Transactions = () => {
         border: darkMode ? '1px solid #333' : 'none'
       }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={2}>
+          <Grid item xs={6} sm={3}>
             <TextField
               fullWidth
               label="Ano"
@@ -394,8 +392,7 @@ const Transactions = () => {
               onChange={(e) => setFilterYear(parseInt(e.target.value) || new Date().getFullYear())}
             />
           </Grid>
-          
-          <Grid item xs={12} sm={8}>
+          <Grid item xs={6} sm={3}>
             <FormControl fullWidth>
               <InputLabel id="month-filter-label">Mês</InputLabel>
               <Select
@@ -420,7 +417,6 @@ const Transactions = () => {
               </Select>
             </FormControl>
           </Grid>
-          
           <Grid item xs={12} sm={2}>
             <Button
               fullWidth
@@ -432,10 +428,10 @@ const Transactions = () => {
               Filtrar
             </Button>
           </Grid>
+          <Grid item xs={false} sm={4} />
         </Grid>
       </Paper>
 
-      {/* Tabela de Transações */}
       <TableContainer component={Paper} sx={{ 
         borderRadius: 3, 
         boxShadow: theme.shadows[2],
@@ -508,7 +504,6 @@ const Transactions = () => {
         </Table>
       </TableContainer>
 
-      {/* Dialog de Criar/Editar */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 'bold' }}>
           {editingId ? '✏️ Editar Transação' : '➕ Nova Transação'}
@@ -588,7 +583,6 @@ const Transactions = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar de Sucesso */}
       <Snackbar
         open={!!success}
         autoHideDuration={6000}

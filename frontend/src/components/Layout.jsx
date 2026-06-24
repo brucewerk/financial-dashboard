@@ -121,7 +121,6 @@ const Layout = () => {
         ))}
       </List>
       
-      {/* Toggle Dark Mode no Menu */}
       <Divider />
       <Box sx={{ p: 2 }}>
         <Box sx={{ 
@@ -166,7 +165,6 @@ const Layout = () => {
           />
         </ListItem>
       </Box>
-      {/* Rodapé do Menu */}
       <Box sx={{ 
         position: 'absolute', 
         bottom: 10, 
@@ -222,7 +220,6 @@ const Layout = () => {
             Controle Financeiro
           </Typography>
           
-          {/* Toggle Dark Mode na AppBar */}
           <IconButton onClick={toggleDarkMode} color="inherit" sx={{ mr: 1 }}>
             {darkMode ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
@@ -269,7 +266,6 @@ const Layout = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Drawer Mobile */}
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
@@ -308,12 +304,11 @@ const Layout = () => {
         </Drawer>
       </Box>
 
-      {/* Conteúdo Principal */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2, sm: 3 },
+          p: { xs: 1.5, sm: 2, md: 3 },
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           mt: { xs: 7, sm: 8 },
           backgroundColor: theme.palette.background.default,
@@ -325,7 +320,6 @@ const Layout = () => {
         <Box sx={{ flex: 1 }}>
           <Outlet />
         </Box>
-        {/* Rodapé da página */}
         <Box sx={{ 
           textAlign: 'center', 
           mt: 4, 
