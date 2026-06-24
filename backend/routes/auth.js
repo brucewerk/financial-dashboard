@@ -1,10 +1,7 @@
-// backend/routes/auth.js - Adicionar rota de perfil
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const auth = require('../middleware/auth');
-const bcrypt = require('bcryptjs');
 
 // Registrar
 router.post('/register', async (req, res) => {
@@ -27,7 +24,7 @@ router.post('/register', async (req, res) => {
     
     res.status(201).json({ 
       token, 
-      user: { id: user._id, name, email, createdAt: user.createdAt } 
+      user: { id: user._id, name, email } 
     });
   } catch (error) {
     console.error('Erro no registro:', error);
@@ -40,21 +37,15 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    console.log(`🔑 Tentativa de login: ${email}`);
-    
     const user = await User.findOne({ email });
     if (!user) {
-      console.log('❌ Usuário não encontrado');
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
     
     const isValid = await user.comparePassword(password);
     if (!isValid) {
-      console.log('❌ Senha inválida');
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
-    
-    console.log('✅ Login bem-sucedido');
     
     const token = jwt.sign(
       { id: user._id },
@@ -64,56 +55,10 @@ router.post('/login', async (req, res) => {
     
     res.json({ 
       token, 
-      user: { 
-        id: user._id, 
-        name: user.name, 
-        email: user.email,
-        createdAt: user.createdAt 
-      } 
+      user: { id: user._id, name: user.name, email: user.email } 
     });
   } catch (error) {
     console.error('Erro no login:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Atualizar perfil (protegido)
-router.put('/profile', auth, async (req, res) => {
-  try {
-    const { name, currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.userId);
-    
-    if (!user) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-    
-    // Atualizar nome
-    if (name) {
-      user.name = name;
-    }
-    
-    // Atualizar senha se fornecida
-    if (newPassword) {
-      if (!currentPassword) {
-        return res.status(400).json({ error: 'Senha atual é obrigatória' });
-      }
-      
-      const isValid = await user.comparePassword(currentPassword);
-      if (!isValid) {
-        return res.status(401).json({ error: 'Senha atual incorreta' });
-      }
-      
-      user.password = await bcrypt.hash(newPassword, 10);
-    }
-    
-    await user.save();
-    
-    res.json({ 
-      message: 'Perfil atualizado com sucesso',
-      user: { id: user._id, name: user.name, email: user.email }
-    });
-  } catch (error) {
-    console.error('Erro ao atualizar perfil:', error);
     res.status(500).json({ error: error.message });
   }
 });

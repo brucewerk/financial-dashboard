@@ -1,4 +1,3 @@
-// backend/server.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -8,7 +7,7 @@ dotenv.config();
 
 const app = express();
 
-// Configuração CORS
+// Configuração CORS - VERSÃO ESTÁVEL
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
@@ -49,7 +48,7 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'API funcionando!' });
 });
 
-// Conexão MongoDB
+// Conexão MongoDB - VERSÃO ESTÁVEL
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://dba:BruceWerk13@ac-xz1ocpq-shard-00-00.rqft77c.mongodb.net:27017,ac-xz1ocpq-shard-00-01.rqft77c.mongodb.net:27017,ac-xz1ocpq-shard-00-02.rqft77c.mongodb.net:27017/Financas?ssl=true&replicaSet=atlas-nx6n95-shard-0&authSource=admin&appName=Users';
 
 mongoose.connect(MONGODB_URI, {
