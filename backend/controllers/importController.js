@@ -55,6 +55,7 @@ const extractAnnualTotals = (data, year) => {
     }
   }
 
+  // Total de Ativos - coluna 14 (O)
   if (totalAssetsRow > 0 && data[totalAssetsRow]) {
     const row = data[totalAssetsRow];
     for (let j = row.length - 1; j >= 0; j--) {
@@ -65,6 +66,7 @@ const extractAnnualTotals = (data, year) => {
     }
   }
 
+  // Total de Passivos - coluna 14 (O)
   if (totalLiabilitiesRow > 0 && data[totalLiabilitiesRow]) {
     const row = data[totalLiabilitiesRow];
     for (let j = row.length - 1; j >= 0; j--) {
@@ -75,6 +77,7 @@ const extractAnnualTotals = (data, year) => {
     }
   }
 
+  // Variação Total - coluna 14 (O)
   if (variationRow > 0 && data[variationRow]) {
     const row = data[variationRow];
     for (let j = row.length - 1; j >= 0; j--) {
@@ -85,23 +88,10 @@ const extractAnnualTotals = (data, year) => {
     }
   }
 
-  if (variationRow === -1 && totalLiabilitiesRow > 0) {
-    const checkRow = totalLiabilitiesRow + 2;
-    if (checkRow < data.length && data[checkRow] && data[checkRow][0] === 'VARIAÇÃO entre MESES') {
-      const row = data[checkRow];
-      for (let j = row.length - 1; j >= 0; j--) {
-        if (row[j] !== undefined && row[j] !== null && row[j] !== '') {
-          totalVariation = extractNumber(row[j]);
-          break;
-        }
-      }
-    }
-  }
-
   return { totalAssets, totalLiabilities, totalVariation };
 };
 
-// Função para importar uma aba de ano - OTIMIZADA
+// Função para importar uma aba de ano - CORRIGIDA
 const importYearSheet = async (data, year, userId, results) => {
   const yearNum = parseInt(year);
   console.log(`   📊 Processando ano ${yearNum}...`);
@@ -121,7 +111,7 @@ const importYearSheet = async (data, year, userId, results) => {
 
   const { totalAssets, totalLiabilities, totalVariation } = extractAnnualTotals(data, year);
 
-  // Salvar balanço anual (apenas 1 documento)
+  // Salvar balanço anual
   if (totalAssets > 0 || totalLiabilities > 0) {
     const existing = await Balance.findOne({ 
       userId, 
@@ -158,10 +148,13 @@ const importYearSheet = async (data, year, userId, results) => {
     console.log(`      ✅ Balanço ${yearNum}: Ativos=${totalAssets.toFixed(2)}, Passivos=${totalLiabilities.toFixed(2)}, Variação=${totalVariation.toFixed(2)}`);
   }
 
-  // Preparar arrays para inserção em lote (BULK INSERT)
+  // Preparar arrays para inserção em lote
   const transactionsToInsert = [];
 
-  // Ativos
+  // =============================================
+  // ATIVOS - CORRIGIDO: Ignora coluna 1 (Dezembro anterior)
+  // Colunas: 0=Descrição, 1=Dez/ano-ant (IGNORAR), 2=Jan, 3=Fev... 13=Dez
+  // =============================================
   if (ativosStartRow > 0) {
     for (let i = ativosStartRow; i < data.length; i++) {
       if (!data[i] || !data[i][0] || data[i][0] === '') break;
@@ -169,25 +162,29 @@ const importYearSheet = async (data, year, userId, results) => {
       const row = data[i];
       if (!row[0] || row[0] === '') continue;
       
-      for (let col = 1; col <= 12; col++) {
+      // Coluna 2 (Janeiro) até coluna 13 (Dezembro)
+      for (let col = 2; col <= 13; col++) {
         const value = extractNumber(row[col]);
         if (value > 0) {
+          const month = col - 1; // col 2 = mês 1, col 13 = mês 12
           transactionsToInsert.push({
             userId,
             year: yearNum,
-            month: col,
+            month: month,
             description: row[0]?.toString().trim() || '',
             category: 'Ativo',
             type: row[0]?.toString().trim() || '',
             value: value,
-            date: new Date(yearNum, col - 1, 1)
+            date: new Date(yearNum, month - 1, 1)
           });
         }
       }
     }
   }
 
-  // Passivos
+  // =============================================
+  // PASSIVOS - CORRIGIDO: Ignora coluna 1 (Dezembro anterior)
+  // =============================================
   if (passivosStartRow > 0) {
     for (let i = passivosStartRow; i < data.length; i++) {
       if (!data[i] || !data[i][0] || data[i][0] === '') break;
@@ -195,25 +192,27 @@ const importYearSheet = async (data, year, userId, results) => {
       const row = data[i];
       if (!row[0] || row[0] === '') continue;
       
-      for (let col = 1; col <= 12; col++) {
+      // Coluna 2 (Janeiro) até coluna 13 (Dezembro)
+      for (let col = 2; col <= 13; col++) {
         const value = extractNumber(row[col]);
         if (value > 0) {
+          const month = col - 1;
           transactionsToInsert.push({
             userId,
             year: yearNum,
-            month: col,
+            month: month,
             description: row[0]?.toString().trim() || '',
             category: 'Passivo',
             type: row[0]?.toString().trim() || '',
             value: value,
-            date: new Date(yearNum, col - 1, 1)
+            date: new Date(yearNum, month - 1, 1)
           });
         }
       }
     }
   }
 
-  // INSERÇÃO EM LOTE - MUITO MAIS RÁPIDO
+  // INSERÇÃO EM LOTE
   if (transactionsToInsert.length > 0) {
     await Transaction.deleteMany({ userId, year: yearNum });
     
@@ -255,13 +254,12 @@ exports.importExcel = async (req, res) => {
       errors: []
     };
 
-    // ==================== 1. Importar CARTEIRA (Investimentos) - CORRIGIDO ====================
+    // ==================== 1. Importar CARTEIRA (Investimentos) ====================
     if (workbook.SheetNames.includes('CARTEIRA')) {
       console.log('📈 Processando aba CARTEIRA...');
       const sheet = workbook.Sheets['CARTEIRA'];
       const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
       
-      // Encontrar onde começam os dados (linha com "TIPO")
       let startRow = 0;
       for (let i = 0; i < data.length; i++) {
         if (data[i] && data[i][0] === 'TIPO') {
@@ -270,31 +268,22 @@ exports.importExcel = async (req, res) => {
         }
       }
 
-      console.log(`   📍 Linha inicial dos dados: ${startRow}`);
-
-      // Remover investimentos existentes
       await Investment.deleteMany({ userId });
 
       const investmentsToInsert = [];
 
-      // Percorrer TODAS as linhas até encontrar o fim dos dados
       for (let i = startRow; i < data.length; i++) {
         const row = data[i];
-        
-        // Verificar se a linha está vazia
         if (!row || row.length === 0) continue;
-        
-        // =============================================
-        // VERIFICAÇÕES PARA PULAR LINHAS INVÁLIDAS
-        // =============================================
+        if (row[0] === 'TODAS AS CONTAS') break;
         
         const firstCell = row[0]?.toString().trim() || '';
         
-        // Pular linhas de cabeçalho ou formatação
+        // Pular cabeçalhos
         if (firstCell === 'BTG INVEST.') continue;
         if (firstCell === 'Outras Contas') continue;
         if (firstCell === 'OUTRAS CONTAS') continue;
-        if (firstCell === 'TODAS AS CONTAS') continue;  // <-- NOVA VERIFICAÇÃO
+        if (firstCell === 'TODAS AS CONTAS') continue;
         if (firstCell === 'TIPO') continue;
         if (firstCell === 'PRODUTO') continue;
         if (firstCell === 'NOME') continue;
@@ -308,40 +297,21 @@ exports.importExcel = async (req, res) => {
         if (firstCell === 'IR e IOF') continue;
         if (firstCell === 'Atualização:') continue;
         if (firstCell === 'Atualização') continue;
-        
-        // Pular linhas que começam com "=" (fórmulas)
         if (firstCell.startsWith('=')) continue;
-        
-        // Pular linhas que são apenas números de contagem
         if (firstCell === '1' || firstCell === '2' || firstCell === '3' || firstCell === '0') continue;
-        
-        // Extrair dados da linha
+
         const name = row[2]?.toString().trim() || '';
         const grossBalance = extractNumber(row[7]);
         const purchaseValue = extractNumber(row[6]);
         const type = row[0]?.toString().trim() || '';
-        
-        // =============================================
-        // VERIFICAÇÕES PARA PULAR REGISTROS INVÁLIDOS
-        // =============================================
-        
-        // Pular se não tiver nome E não tiver valores
+
         if (!name && grossBalance === 0 && purchaseValue === 0) continue;
-        
-        // Pular se o nome for "OUTRAS CONTAS" (case insensitive)
         if (name.toUpperCase() === 'OUTRAS CONTAS') continue;
-        
-        // Pular se o nome for "TODAS AS CONTAS" (case insensitive)
-        if (name.toUpperCase() === 'TODAS AS CONTAS') continue;  // <-- NOVA VERIFICAÇÃO
-        
-        // Pular se o tipo for vazio e o nome for vazio
+        if (name.toUpperCase() === 'TODAS AS CONTAS') continue;
         if (!type && !name) continue;
-        
-        // Pular se o nome for um cabeçalho de coluna
         if (name === 'NOME' || name === 'EMISSÃO' || name === 'VENCE') continue;
         if (name === 'VAL.COMPRA' || name === 'SALDO BRUTO' || name === 'RENDIMENTO') continue;
 
-        // Criar o investimento
         const investment = {
           userId,
           type: type,
@@ -357,10 +327,8 @@ exports.importExcel = async (req, res) => {
           irAndIof: extractNumber(row[10]) || 0
         };
 
-        // Incluir apenas se tiver nome ou valor
         if (investment.name || investment.grossBalance > 0 || investment.purchaseValue > 0) {
           investmentsToInsert.push(investment);
-          console.log(`      📌 Registro ${investmentsToInsert.length}: ${investment.name} - R$ ${investment.grossBalance.toFixed(2)}`);
         }
       }
 
@@ -370,14 +338,6 @@ exports.importExcel = async (req, res) => {
         console.log(`   ✅ ${results.investments} investimentos importados em lote`);
         const totalInvested = investmentsToInsert.reduce((sum, inv) => sum + inv.grossBalance, 0);
         console.log(`   📊 Total investido (H29): R$ ${totalInvested.toFixed(2)}`);
-        
-        // Listar todos os investimentos importados
-        console.log(`\n   📋 INVESTIMENTOS IMPORTADOS:`);
-        investmentsToInsert.forEach((inv, idx) => {
-          console.log(`      ${idx + 1}. ${inv.name} - R$ ${inv.grossBalance.toFixed(2)}`);
-        });
-      } else {
-        console.log(`   ⚠️ Nenhum investimento encontrado para importar!`);
       }
     }
 
