@@ -1,14 +1,5 @@
 {
-  "name": "financial-dashboard",
-  "version": "1.0.0",
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
-    "start": "node backend/server.js"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.0"
+    "build": "node build.js"
   }
 }
