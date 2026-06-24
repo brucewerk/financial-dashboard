@@ -93,3 +93,14 @@ if (process.env.NODE_ENV === 'production') {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
   });
 }
+
+// Para Vercel, exportar o app
+if (process.env.NODE_ENV === 'production') {
+  module.exports = app;
+} else {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`🌐 http://localhost:${PORT}`);
+  });
+}
