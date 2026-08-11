@@ -1,5 +1,5 @@
 // frontend/src/pages/Import.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   Paper,
   Typography,
@@ -7,71 +7,86 @@ import {
   Button,
   Alert,
   Snackbar,
-  CircularProgress,
   Grid,
   Card,
   CardContent,
   LinearProgress,
   useTheme,
-  useMediaQuery
-} from '@mui/material';
+  useMediaQuery,
+} from "@mui/material";
 import {
   CloudUpload as CloudUploadIcon,
-  CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
-  Description as DescriptionIcon
-} from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
-import api from '../services/api';
+  Description as DescriptionIcon,
+} from "@mui/icons-material";
+import api from "../services/api";
 
 const Import = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { user } = useAuth();
-  
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [result, setResult] = useState(null);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setResult(null);
+      setError("");
+      setSuccess("");
+      setUploadProgress(0);
+    }
+  }, [selectedFile]);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       const validTypes = [
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.ms-excel'
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/vnd.ms-excel",
       ];
-      if (validTypes.includes(file.type) || file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+      if (
+        validTypes.includes(file.type) ||
+        file.name.endsWith(".xlsx") ||
+        file.name.endsWith(".xls")
+      ) {
         setSelectedFile(file);
-        setError('');
+        setError("");
         setResult(null);
+        setSuccess("");
       } else {
-        setError('Por favor, selecione um arquivo Excel válido (.xlsx ou .xls)');
+        setError(
+          "Por favor, selecione um arquivo Excel válido (.xlsx ou .xls)",
+        );
         setSelectedFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
       }
     }
   };
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      setError('Selecione um arquivo para importar');
+      setError("Selecione um arquivo para importar");
       return;
     }
 
     const formData = new FormData();
-    formData.append('file', selectedFile);
+    formData.append("file", selectedFile);
 
     setUploading(true);
     setUploadProgress(0);
-    setError('');
+    setError("");
     setResult(null);
+    setSuccess("");
 
     try {
-      // Simular progresso
       const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
+        setUploadProgress((prev) => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return 90;
@@ -80,84 +95,102 @@ const Import = () => {
         });
       }, 500);
 
-      const response = await api.post('/import/excel', formData, {
+      const response = await api.post("/import/excel", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
 
       clearInterval(progressInterval);
       setUploadProgress(100);
       setResult(response.data.results);
-      setSuccess('Importação concluída com sucesso!');
+      setSuccess("Importação concluída com sucesso!");
+
       setSelectedFile(null);
-      
-      // Reset file input
-      document.getElementById('file-input').value = '';
-      
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     } catch (err) {
-      console.error('Erro na importação:', err);
-      setError(err.response?.data?.error || 'Erro ao importar arquivo');
+      console.error("Erro na importação:", err);
+      setError(err.response?.data?.error || "Erro ao importar arquivo");
       setUploadProgress(0);
     } finally {
       setUploading(false);
     }
   };
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value || 0);
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setResult(null);
+    setError("");
+    setSuccess("");
+    setUploadProgress(0);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
-    <div>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
+    <Box
+      sx={{ display: "flex", flexDirection: "column", flex: 1, width: "100%" }}
+    >
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        gutterBottom
+        sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
+      >
         📤 Importar Planilha
       </Typography>
       <Typography variant="body1" color="textSecondary" sx={{ mb: 3 }}>
-        Importe sua planilha de finanças no formato Excel (.xlsx ou .xls) para popular automaticamente o sistema.
+        Importe sua planilha de finanças no formato Excel (.xlsx ou .xls) para
+        popular automaticamente o sistema.
       </Typography>
 
       <Grid container spacing={3}>
-        {/* Área de Upload */}
         <Grid item xs={12} md={8}>
-          <Paper sx={{ 
-            p: { xs: 2, sm: 3 }, 
-            borderRadius: 3,
-            boxShadow: theme.shadows[2],
-            textAlign: 'center'
-          }}>
+          <Paper
+            sx={{
+              p: { xs: 2, sm: 3 },
+              borderRadius: 3,
+              boxShadow: theme.shadows[2],
+              textAlign: "center",
+              elevation: 1,
+            }}
+          >
             <Box
               sx={{
-                border: '2px dashed #ccc',
+                border: "2px dashed #ccc",
                 borderRadius: 2,
                 p: { xs: 3, sm: 5 },
-                backgroundColor: '#fafafa',
-                cursor: 'pointer',
-                transition: 'all 0.3s',
-                '&:hover': {
+                backgroundColor: "#fafafa",
+                cursor: "pointer",
+                transition: "all 0.3s",
+                "&:hover": {
                   borderColor: theme.palette.primary.main,
-                  backgroundColor: '#f0f7ff'
+                  backgroundColor: "#f0f7ff",
+                },
+              }}
+              onClick={() => {
+                if (!uploading && fileInputRef.current) {
+                  fileInputRef.current.click();
                 }
               }}
-              onClick={() => document.getElementById('file-input').click()}
             >
               <input
-                id="file-input"
+                ref={fileInputRef}
                 type="file"
                 accept=".xlsx,.xls"
                 onChange={handleFileChange}
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
                 disabled={uploading}
               />
-              
+
               {selectedFile ? (
                 <Box>
-                  <DescriptionIcon sx={{ fontSize: 60, color: theme.palette.primary.main }} />
+                  <DescriptionIcon
+                    sx={{ fontSize: 60, color: theme.palette.primary.main }}
+                  />
                   <Typography variant="h6" sx={{ mt: 2 }}>
                     {selectedFile.name}
                   </Typography>
@@ -170,16 +203,16 @@ const Import = () => {
                     sx={{ mt: 2 }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setSelectedFile(null);
-                      document.getElementById('file-input').value = '';
+                      handleRemoveFile();
                     }}
+                    disabled={uploading}
                   >
                     Trocar arquivo
                   </Button>
                 </Box>
               ) : (
                 <Box>
-                  <CloudUploadIcon sx={{ fontSize: 80, color: '#ccc' }} />
+                  <CloudUploadIcon sx={{ fontSize: 80, color: "#ccc" }} />
                   <Typography variant="h6" color="textSecondary" sx={{ mt: 2 }}>
                     Clique para selecionar ou arraste um arquivo
                   </Typography>
@@ -191,10 +224,16 @@ const Import = () => {
             </Box>
 
             {uploading && (
-              <Box sx={{ width: '100%', mt: 3 }}>
+              <Box sx={{ width: "100%", mt: 3 }}>
                 <LinearProgress variant="determinate" value={uploadProgress} />
-                <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                  {uploadProgress < 100 ? 'Processando arquivo...' : 'Finalizando...'}
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  sx={{ mt: 1 }}
+                >
+                  {uploadProgress < 100
+                    ? "Processando arquivo..."
+                    : "Finalizando..."}
                 </Typography>
               </Box>
             )}
@@ -207,7 +246,7 @@ const Import = () => {
               disabled={!selectedFile || uploading}
               sx={{ mt: 3, minWidth: 200 }}
             >
-              {uploading ? 'Importando...' : 'Importar Planilha'}
+              {uploading ? "Importando..." : "Importar Planilha"}
             </Button>
 
             {error && (
@@ -224,21 +263,23 @@ const Import = () => {
           </Paper>
         </Grid>
 
-        {/* Resumo da Importação */}
         <Grid item xs={12} md={4}>
-          <Paper sx={{ 
-            p: { xs: 2, sm: 3 }, 
-            borderRadius: 3,
-            boxShadow: theme.shadows[2],
-            height: '100%'
-          }}>
+          <Paper
+            sx={{
+              p: { xs: 2, sm: 3 },
+              borderRadius: 3,
+              boxShadow: theme.shadows[2],
+              height: "100%",
+              elevation: 1,
+            }}
+          >
             <Typography variant="h6" fontWeight="bold" gutterBottom>
               📊 Resumo da Importação
             </Typography>
-            
+
             {result ? (
               <Box>
-                <Card sx={{ bgcolor: '#e3f2fd', mb: 2 }}>
+                <Card sx={{ backgroundColor: "#e3f2fd", mb: 2 }}>
                   <CardContent>
                     <Typography color="textSecondary" variant="body2">
                       Investimentos
@@ -248,8 +289,8 @@ const Import = () => {
                     </Typography>
                   </CardContent>
                 </Card>
-                
-                <Card sx={{ bgcolor: '#bbdefb', mb: 2 }}>
+
+                <Card sx={{ backgroundColor: "#bbdefb", mb: 2 }}>
                   <CardContent>
                     <Typography color="textSecondary" variant="body2">
                       Transações
@@ -259,8 +300,8 @@ const Import = () => {
                     </Typography>
                   </CardContent>
                 </Card>
-                
-                <Card sx={{ bgcolor: '#e8f5e9' }}>
+
+                <Card sx={{ backgroundColor: "#e8f5e9" }}>
                   <CardContent>
                     <Typography color="textSecondary" variant="body2">
                       Balanços Anuais
@@ -278,7 +319,7 @@ const Import = () => {
                 )}
               </Box>
             ) : (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Box sx={{ textAlign: "center", py: 4 }}>
                 <Typography color="textSecondary">
                   Selecione e importe uma planilha para ver o resumo aqui
                 </Typography>
@@ -288,21 +329,26 @@ const Import = () => {
         </Grid>
       </Grid>
 
-      {/* Snackbar */}
       <Snackbar
         open={!!success || !!error}
         autoHideDuration={6000}
-        onClose={() => { setSuccess(''); setError(''); }}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        onClose={() => {
+          setSuccess("");
+          setError("");
+        }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert 
-          severity={success ? 'success' : 'error'} 
-          onClose={() => { setSuccess(''); setError(''); }}
+        <Alert
+          severity={success ? "success" : "error"}
+          onClose={() => {
+            setSuccess("");
+            setError("");
+          }}
         >
           {success || error}
         </Alert>
       </Snackbar>
-    </div>
+    </Box>
   );
 };
 

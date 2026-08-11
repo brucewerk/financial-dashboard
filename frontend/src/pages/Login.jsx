@@ -1,6 +1,6 @@
 // frontend/src/pages/Login.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Container,
   Box,
@@ -11,19 +11,19 @@ import {
   Tabs,
   Tab,
   IconButton,
-  useTheme
-} from '@mui/material';
-import { Brightness4, Brightness7 } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
-import { useThemeContext } from '../contexts/ThemeContext';
+  useTheme,
+} from "@mui/material";
+import { Brightness4, Brightness7 } from "@mui/icons-material";
+import { useAuth } from "../contexts/AuthContext";
+import { useThemeContext } from "../contexts/ThemeContext";
 
 const Login = () => {
   const theme = useTheme();
   const [tab, setTab] = useState(0);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
   const { login, register } = useAuth();
@@ -31,7 +31,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setSubmitting(true);
     try {
       if (tab === 0) {
@@ -39,38 +39,62 @@ const Login = () => {
       } else {
         await register(name, email, password);
       }
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.error || 'Erro ao autenticar');
+      setError(err.response?.data?.error || "Erro ao autenticar");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper elevation={3} sx={{ 
-          p: 4, 
-          width: '100%',
-          backgroundColor: theme.palette.background.paper,
-        }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography component="h1" variant="h5" align="center" sx={{ flex: 1 }}>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        minHeight: "100dvh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: theme.palette.background.default,
+        p: 2,
+      }}
+    >
+      <Container component="main" maxWidth="xs">
+        <Paper
+          elevation={3}
+          sx={{
+            p: { xs: 3, sm: 4 },
+            width: "100%",
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: 3,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
+            <Typography
+              component="h1"
+              variant="h5"
+              align="center"
+              sx={{ flex: 1, fontWeight: "bold" }}
+            >
               KLING KLANG
             </Typography>
             <IconButton onClick={toggleDarkMode} color="inherit">
               {darkMode ? <Brightness7 /> : <Brightness4 />}
             </IconButton>
           </Box>
-          <Typography variant="subtitle2" color="textSecondary" align="center" sx={{ mb: 2 }}>
+          <Typography
+            variant="subtitle2"
+            color="textSecondary"
+            align="center"
+            sx={{ mb: 2 }}
+          >
             Controle Financeiro
           </Typography>
           <Tabs
@@ -111,12 +135,12 @@ const Login = () => {
               fullWidth
               label="Senha"
               type="password"
-              autoComplete={tab === 0 ? 'current-password' : 'new-password'}
+              autoComplete={tab === 0 ? "current-password" : "new-password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
             {error && (
-              <Typography color="error" sx={{ mt: 1 }}>
+              <Typography color="error" sx={{ mt: 1, fontSize: "0.9rem" }}>
                 {error}
               </Typography>
             )}
@@ -125,33 +149,42 @@ const Login = () => {
               fullWidth
               variant="contained"
               disabled={submitting}
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ mt: 3, mb: 2, py: 1.5 }}
             >
-              {submitting ? 'Aguarde...' : tab === 0 ? 'Entrar' : 'Registrar'}
+              {submitting ? "Aguarde..." : tab === 0 ? "Entrar" : "Registrar"}
             </Button>
           </Box>
-          {/* Rodapé do Login */}
-          <Box sx={{ textAlign: 'center', mt: 2, pt: 2, borderTop: '1px solid ' + (darkMode ? '#333333' : '#e0e0e0') }}>
-            <Typography variant="caption" sx={{ fontSize: '0.6rem', color: theme.palette.text.secondary }}>
-              Desenvolvido por{' '}
-              <a 
-                href="https://klingklang.free.nf" 
-                target="_blank" 
+          <Box
+            sx={{
+              textAlign: "center",
+              mt: 2,
+              pt: 2,
+              borderTop: "1px solid " + (darkMode ? "#333333" : "#e0e0e0"),
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{ fontSize: "0.6rem", color: theme.palette.text.secondary }}
+            >
+              Desenvolvido por{" "}
+              <a
+                href="https://klingklang.free.nf"
+                target="_blank"
                 rel="noopener noreferrer"
-                style={{ 
-                  color: theme.palette.primary.main, 
-                  textDecoration: 'none',
-                  fontWeight: 'bold'
+                style={{
+                  color: theme.palette.primary.main,
+                  textDecoration: "none",
+                  fontWeight: "bold",
                 }}
               >
                 BruCe
-              </a>
-              {' '}- 2026
+              </a>{" "}
+              - 2026
             </Typography>
           </Box>
         </Paper>
-      </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 
