@@ -268,7 +268,92 @@ const Investments = () => {
         </Grid>
       </Grid>
 
-      {/* Tabela de Investimentos */}
+      {/* Investimentos: cartões empilhados no celular (9 colunas numa tabela
+          só funcionam bem em tela larga — no celular isso vira rolagem
+          horizontal, que é uma péssima experiência), tabela completa a
+          partir de 'sm'. */}
+      {isMobile ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          {loading && !investments.length ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : investments.length === 0 ? (
+            <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 3 }}>
+              <Typography color={darkMode ? '#78909c' : 'textSecondary'}>
+                Nenhum investimento encontrado
+              </Typography>
+            </Paper>
+          ) : (
+            investments.map((inv) => (
+              <Card key={inv._id} sx={{ borderRadius: 3 }}>
+                <CardContent sx={{ pb: '16px !important' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                    <Box sx={{ minWidth: 0, pr: 1 }}>
+                      <Chip label={inv.type} size="small" color={getTypeColor(inv.type)} sx={{ fontWeight: 500, mb: 0.5 }} />
+                      <Typography sx={{ fontWeight: 600, wordBreak: 'break-word' }}>
+                        {inv.name || inv.product || '—'}
+                      </Typography>
+                      {inv.name && inv.product && (
+                        <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'}>
+                          {inv.product}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', flexShrink: 0 }}>
+                      <IconButton size="small" color="primary" onClick={() => handleOpenDialog(inv)} sx={{ minWidth: 40, minHeight: 40 }}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton size="small" color="error" onClick={() => handleDelete(inv._id)} sx={{ minWidth: 40, minHeight: 40 }}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1.5 }}>
+                    <Box>
+                      <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">
+                        Valor Compra
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {formatCurrency(inv.purchaseValue)}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">
+                        Saldo Bruto
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {formatCurrency(inv.grossBalance)}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">
+                        Rendimento
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        color={(inv.yield || 0) >= 0 ? (darkMode ? '#81c784' : 'success.main') : (darkMode ? '#ef9a9a' : 'error.main')}
+                      >
+                        {formatCurrency(inv.yield || 0)}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">
+                        Taxa / Vencimento
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {inv.annualRate}% · {formatDate(inv.maturityDate)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </Box>
+      ) : (
       <TableContainer component={Paper} sx={{ 
         borderRadius: 3, 
         boxShadow: theme.shadows[2],
@@ -349,6 +434,7 @@ const Investments = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      )}
 
       {/* Dialog de Criar/Editar */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>

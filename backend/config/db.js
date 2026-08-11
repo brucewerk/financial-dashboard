@@ -21,7 +21,7 @@
 
 const mongoose = require('mongoose');
 
-const MONGODB_URI = process.env.MONGODB_URI;
+// (lida dentro de connectDB(), não aqui no topo — ver explicação abaixo)
 
 let cached = global.__mongoConnection;
 if (!cached) {
@@ -29,6 +29,12 @@ if (!cached) {
 }
 
 async function connectDB() {
+  // Lido AQUI DENTRO (não como uma const no topo do arquivo) de propósito:
+  // se este módulo for importado antes de `dotenv.config()` rodar em algum
+  // outro ponto de entrada, uma const no topo capturaria `undefined` para
+  // sempre. Lendo a cada chamada, isso nunca pode travar dessa forma.
+  const MONGODB_URI = process.env.MONGODB_URI;
+
   // Conexão já pronta e saudável — reaproveita.
   if (cached.conn && mongoose.connection.readyState === 1) {
     return cached.conn;

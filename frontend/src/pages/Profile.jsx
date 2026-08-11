@@ -174,6 +174,7 @@ const Profile = () => {
                 label="Senha Atual"
                 name="currentPassword"
                 type="password"
+                autoComplete="current-password"
                 value={formData.currentPassword}
                 onChange={handleChange}
                 margin="normal"
@@ -186,6 +187,7 @@ const Profile = () => {
                 label="Nova Senha"
                 name="newPassword"
                 type="password"
+                autoComplete="new-password"
                 value={formData.newPassword}
                 onChange={handleChange}
                 margin="normal"
@@ -198,6 +200,7 @@ const Profile = () => {
                 label="Confirmar Nova Senha"
                 name="confirmPassword"
                 type="password"
+                autoComplete="new-password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 margin="normal"

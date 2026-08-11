@@ -24,6 +24,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
   const { login, register } = useAuth();
   const { darkMode, toggleDarkMode } = useThemeContext();
@@ -31,6 +32,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSubmitting(true);
     try {
       if (tab === 0) {
         await login(email, password);
@@ -40,6 +42,8 @@ const Login = () => {
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Erro ao autenticar');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -85,6 +89,7 @@ const Login = () => {
                 required
                 fullWidth
                 label="Nome"
+                autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -95,6 +100,8 @@ const Login = () => {
               fullWidth
               label="Email"
               type="email"
+              autoComplete="email"
+              inputMode="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -104,6 +111,7 @@ const Login = () => {
               fullWidth
               label="Senha"
               type="password"
+              autoComplete={tab === 0 ? 'current-password' : 'new-password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -116,9 +124,10 @@ const Login = () => {
               type="submit"
               fullWidth
               variant="contained"
+              disabled={submitting}
               sx={{ mt: 3, mb: 2 }}
             >
-              {tab === 0 ? 'Entrar' : 'Registrar'}
+              {submitting ? 'Aguarde...' : tab === 0 ? 'Entrar' : 'Registrar'}
             </Button>
           </Box>
           {/* Rodapé do Login */}

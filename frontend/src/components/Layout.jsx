@@ -167,7 +167,7 @@ const Layout = () => {
       </Box>
       <Box sx={{ 
         position: 'absolute', 
-        bottom: 10, 
+        bottom: 'calc(10px + env(safe-area-inset-bottom))', 
         width: '100%', 
         textAlign: 'center',
         fontSize: '0.65rem',
@@ -199,11 +199,14 @@ const Layout = () => {
       <AppBar
         position="fixed"
         sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
+          width: { md: `calc(100% - ${drawerWidth}px)` },
+          ml: { md: `${drawerWidth}px` },
           boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
           backgroundColor: theme.palette.background.paper,
           color: theme.palette.text.primary,
+          // Empurra a barra pra baixo do notch/ilha dinâmica em vez de
+          // ficar escondida atrás dela (viewport-fit=cover no index.html).
+          pt: 'env(safe-area-inset-top)',
         }}
       >
         <Toolbar>
@@ -212,7 +215,7 @@ const Layout = () => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ mr: 2, display: { md: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
@@ -268,7 +271,7 @@ const Layout = () => {
 
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
       >
         <Drawer
           variant="temporary"
@@ -276,7 +279,7 @@ const Layout = () => {
           onClose={handleDrawerToggle}
           ModalProps={{ keepMounted: true }}
           sx={{
-            display: { xs: 'block', sm: 'none' },
+            display: { xs: 'block', md: 'none' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
@@ -289,7 +292,7 @@ const Layout = () => {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', sm: 'block' },
+            display: { xs: 'none', md: 'block' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
@@ -309,12 +312,14 @@ const Layout = () => {
         sx={{
           flexGrow: 1,
           p: { xs: 1.5, sm: 2, md: 3 },
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { md: `calc(100% - ${drawerWidth}px)` },
           mt: { xs: 7, sm: 8 },
           backgroundColor: theme.palette.background.default,
-          minHeight: '100vh',
+          minHeight: '100dvh',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          // Respiro pra barra de gestos/home indicator em iPhones sem botão físico.
+          pb: 'env(safe-area-inset-bottom)',
         }}
       >
         <Box sx={{ flex: 1 }}>

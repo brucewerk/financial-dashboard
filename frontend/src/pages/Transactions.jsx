@@ -432,6 +432,52 @@ const Transactions = () => {
         </Grid>
       </Paper>
 
+      {isMobile ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          {loading && !transactions.length ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : transactions.length === 0 ? (
+            <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 3 }}>
+              <Typography color={darkMode ? '#78909c' : 'textSecondary'}>Nenhuma transação encontrada</Typography>
+            </Paper>
+          ) : (
+            transactions.map((trans) => (
+              <Card key={trans._id} sx={{ borderRadius: 3 }}>
+                <CardContent sx={{ pb: '16px !important' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Box sx={{ minWidth: 0, pr: 1 }}>
+                      <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'}>
+                        {trans.year}/{String(trans.month).padStart(2, '0')} · {trans.type}
+                      </Typography>
+                      <Typography sx={{ fontWeight: 600, wordBreak: 'break-word' }}>
+                        {trans.description}
+                      </Typography>
+                      <Chip label={trans.category} size="small" color={getCategoryColor(trans.category)} sx={{ mt: 0.5 }} />
+                    </Box>
+                    <Box sx={{ display: 'flex', flexShrink: 0 }}>
+                      <IconButton size="small" color="primary" onClick={() => handleOpenDialog(trans)} sx={{ minWidth: 40, minHeight: 40 }}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton size="small" color="error" onClick={() => handleDelete(trans._id)} sx={{ minWidth: 40, minHeight: 40 }}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                  <Typography
+                    align="right"
+                    sx={{ mt: 1, fontWeight: 'bold' }}
+                    color={trans.category === 'Ativo' ? (darkMode ? '#81c784' : 'success.main') : (darkMode ? '#ef9a9a' : 'error.main')}
+                  >
+                    {formatCurrency(trans.value)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </Box>
+      ) : (
       <TableContainer component={Paper} sx={{ 
         borderRadius: 3, 
         boxShadow: theme.shadows[2],
@@ -503,6 +549,7 @@ const Transactions = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      )}
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 'bold' }}>

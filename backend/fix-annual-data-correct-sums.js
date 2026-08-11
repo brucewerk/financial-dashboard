@@ -1,9 +1,14 @@
+require('dotenv').config();
 // backend/fix-annual-data-correct-sums.js
 const mongoose = require('mongoose');
 const Balance = require('./models/Balance');
 const User = require('./models/User');
 
-const MONGODB_URI = 'mongodb://dba:BruceWerk13@ac-xz1ocpq-shard-00-00.rqft77c.mongodb.net:27017,ac-xz1ocpq-shard-00-01.rqft77c.mongodb.net:27017,ac-xz1ocpq-shard-00-02.rqft77c.mongodb.net:27017/Financas?ssl=true&replicaSet=atlas-nx6n95-shard-0&authSource=admin&appName=Users';
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+  console.error('❌ Defina MONGODB_URI no seu .env antes de rodar este script.');
+  process.exit(1);
+}
 
 // VALORES CORRETOS (já são as somas que você quer)
 // Passivos: R$ 129.139,12 (soma correta de 2025 + 2026)
