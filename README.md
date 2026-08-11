@@ -75,3 +75,4 @@ cd ../frontend
 npm run dev
 
 # 8. Acesse http://localhost:5173
+
