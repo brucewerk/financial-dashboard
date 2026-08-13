@@ -481,6 +481,82 @@ const Evolution = () => {
         <Typography variant="h6" fontWeight="bold" gutterBottom>
           📋 Dados Detalhados - {selectedYear}
         </Typography>
+
+        {isMobile ? (
+          // No celular em pé, 5 colunas de valores em R$ não cabem numa
+          // tabela sem rolagem horizontal — em pé cada mês vira um cartão;
+          // a tabela normal continua a partir de 600px (celular deitado já
+          // cabe bem, como tabela mesmo).
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 1 }}>
+            {filteredBalances.length === 0 ? (
+              <Typography align="center" sx={{ py: 3 }} color={darkMode ? '#aaa' : 'textSecondary'}>
+                Nenhum dado disponível para {selectedYear}
+              </Typography>
+            ) : (
+              filteredBalances.map((b, index) => {
+                const patrimonio = (b.totalAssets || 0) - (b.totalLiabilities || 0);
+                const variation = variations[index] || 0;
+                return (
+                  <Card key={b._id} variant="outlined" sx={{ borderRadius: 2 }}>
+                    <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
+                      <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                        {b.month}/{b.year}
+                      </Typography>
+                      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                        <Box>
+                          <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Ativos</Typography>
+                          <Typography variant="body2">{formatCurrency(b.totalAssets)}</Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Passivos</Typography>
+                          <Typography variant="body2">{formatCurrency(b.totalLiabilities)}</Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Patrimônio</Typography>
+                          <Typography variant="body2" fontWeight="bold">{formatCurrency(patrimonio)}</Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Variação</Typography>
+                          <Typography variant="body2" fontWeight="bold" color={variation >= 0 ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e')}>
+                            {formatCurrency(variation)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+
+            <Card sx={{ borderRadius: 2, backgroundColor: darkMode ? '#2a2a2a' : '#f5f5f5' }}>
+              <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
+                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                  TOTAL {selectedYear}
+                </Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                  <Box>
+                    <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Ativos</Typography>
+                    <Typography variant="body2" fontWeight="bold">{formatCurrency(yearTotalAssets)}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Passivos</Typography>
+                    <Typography variant="body2" fontWeight="bold">{formatCurrency(yearTotalLiabilities)}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Patrimônio</Typography>
+                    <Typography variant="body2" fontWeight="bold">{formatCurrency(yearTotalNetWorth)}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Variação</Typography>
+                    <Typography variant="body2" fontWeight="bold" color={yearTotalVariation >= 0 ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e')}>
+                      {formatCurrency(yearTotalVariation)}
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        ) : (
         <Box 
           component="table" 
           sx={{ 
@@ -578,6 +654,7 @@ const Evolution = () => {
             </tr>
           </tfoot>
         </Box>
+        )}
       </Paper>
     </div>
   );

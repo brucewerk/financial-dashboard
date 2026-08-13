@@ -967,6 +967,45 @@ const Reports = () => {
               </Grid>
             </Grid>
 
+            {isMobile ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {filteredTransactions.length === 0 ? (
+                  <Typography align="center" sx={{ py: 3 }} color={darkMode ? '#78909c' : 'textSecondary'}>
+                    Nenhuma transação encontrada para {selectedYear}
+                  </Typography>
+                ) : (
+                  filteredTransactions.map((trans) => (
+                    <Card key={trans._id} variant="outlined" sx={{ borderRadius: 2 }}>
+                      <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <Box sx={{ minWidth: 0, pr: 1 }}>
+                            <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'}>
+                              {trans.month}/{trans.year}
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-word' }}>
+                              {trans.description}
+                            </Typography>
+                            <span style={{
+                              color: trans.category === 'Ativo' ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e'),
+                              fontWeight: 'bold',
+                              fontSize: '0.75rem'
+                            }}>
+                              {trans.category}
+                            </span>
+                          </Box>
+                          <Typography
+                            sx={{ fontWeight: 'bold', flexShrink: 0 }}
+                            color={trans.category === 'Ativo' ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e')}
+                          >
+                            {formatCurrency(trans.value)}
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </Box>
+            ) : (
             <TableContainer>
               <Table size="small">
                 <TableHead>
@@ -1013,6 +1052,7 @@ const Reports = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+            )}
           </Paper>
         </Box>
 
@@ -1077,6 +1117,50 @@ const Reports = () => {
               </Grid>
             </Grid>
 
+            {isMobile ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {investments.length === 0 ? (
+                  <Typography align="center" sx={{ py: 3 }} color={darkMode ? '#78909c' : 'textSecondary'}>
+                    Nenhum investimento encontrado
+                  </Typography>
+                ) : (
+                  investments.map((inv) => (
+                    <Card key={inv._id} variant="outlined" sx={{ borderRadius: 2 }}>
+                      <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
+                        <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'}>
+                          {inv.type}{inv.product ? ` · ${inv.product}` : ''}
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-word' }} gutterBottom>
+                          {inv.name || '—'}
+                        </Typography>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                          <Box>
+                            <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Valor</Typography>
+                            <Typography variant="body2">{formatCurrency(inv.grossBalance)}</Typography>
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Rendimento</Typography>
+                            <Typography variant="body2" fontWeight="bold" color={(inv.yield || 0) >= 0 ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e')}>
+                              {formatCurrency(inv.yield || 0)}
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Taxa</Typography>
+                            <Typography variant="body2">{inv.annualRate}%</Typography>
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'} display="block">Vencimento</Typography>
+                            <Typography variant="body2">
+                              {inv.maturityDate ? new Date(inv.maturityDate).toLocaleDateString('pt-BR') : '-'}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </Box>
+            ) : (
             <TableContainer>
               <Table size="small">
                 <TableHead>
@@ -1119,6 +1203,7 @@ const Reports = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+            )}
           </Paper>
         </Box>
 

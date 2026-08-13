@@ -75,18 +75,24 @@ const Layout = () => {
   ];
 
   const drawer = (
-    <div>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Toolbar sx={{ 
         backgroundColor: theme.palette.primary.main,
         color: '#fff',
         minHeight: 64,
+        flexShrink: 0,
       }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold', flexGrow: 1, textAlign: 'center' }}>
           KLING KLANG
         </Typography>
       </Toolbar>
       <Divider />
-      <List sx={{ pt: 2 }}>
+      {/* flex:1 + overflowY:auto — numa tela baixa (celular deitado), a lista
+          rola dentro do próprio espaço em vez de invadir o bloco do usuário
+          e o rodapé abaixo. Antes, os dois ficavam com position:absolute
+          contando a partir da altura TOTAL da tela, então numa tela curta a
+          lista (que flui normalmente) simplesmente passava por cima deles. */}
+      <List dense sx={{ pt: 1, flex: 1, overflowY: 'auto', minHeight: 0 }}>
         {menuItems.map((item) => (
           <ListItem
             button
@@ -98,7 +104,8 @@ const Layout = () => {
             sx={{
               mx: 1,
               borderRadius: 2,
-              mb: 0.5,
+              mb: 0.25,
+              py: 0.25,
               '&:hover': {
                 backgroundColor: theme.palette.primary.light + '20',
               },
@@ -123,7 +130,7 @@ const Layout = () => {
       </List>
       
       <Divider />
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 1, flexShrink: 0 }}>
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -145,7 +152,7 @@ const Layout = () => {
       </Box>
       
       <Divider sx={{ mt: 1 }} />
-      <Box sx={{ p: 2, position: 'absolute', bottom: 60, width: '100%' }}>
+      <Box sx={{ p: 1, flexShrink: 0 }}>
         <ListItem
           button
           onClick={() => {
@@ -167,13 +174,13 @@ const Layout = () => {
         </ListItem>
       </Box>
       <Box sx={{ 
-        position: 'absolute', 
-        bottom: 'calc(10px + env(safe-area-inset-bottom))', 
+        flexShrink: 0,
         width: '100%', 
         textAlign: 'center',
         fontSize: '0.65rem',
         color: '#999',
-        padding: '0 8px'
+        padding: '0 8px 8px',
+        pb: 'calc(8px + env(safe-area-inset-bottom))',
       }}>
         <Typography variant="caption" sx={{ fontSize: '0.6rem', color: theme.palette.text.secondary }}>
           Desenvolvido por{' '}
@@ -192,7 +199,7 @@ const Layout = () => {
           {' '}- 2026
         </Typography>
       </Box>
-    </div>
+    </Box>
   );
 
   return (

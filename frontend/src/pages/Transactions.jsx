@@ -449,7 +449,7 @@ const Transactions = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <Box sx={{ minWidth: 0, pr: 1 }}>
                       <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'}>
-                        {trans.year}/{String(trans.month).padStart(2, '0')} · {trans.type}
+                        {trans.year}/{String(trans.month).padStart(2, '0')}
                       </Typography>
                       <Typography sx={{ fontWeight: 600, wordBreak: 'break-word' }}>
                         {trans.description}
