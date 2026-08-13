@@ -46,6 +46,11 @@ import { useThemeContext } from '../contexts/ThemeContext';
 const Reports = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  // Critério mais largo (900px) só para as tabelas de dados — o mesmo usado
+  // em Investimentos/Transações. Garante cartões em qualquer largura de
+  // celular, mesmo variações que fiquem perto dos 600px do isMobile normal
+  // (que continua em 600px só para os ajustes finos dos gráficos).
+  const isTableMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { darkMode } = useThemeContext();
   const reportRef = useRef(null);
   const [investments, setInvestments] = useState([]);
@@ -425,68 +430,7 @@ const Reports = () => {
         document.body.removeChild(chartContainer3);
       }
 
-      // ===== PÁGINA 5: Resumo de Transações =====
-      let transHtml = `
-        <h3 style="color: #1976d2; margin: 0 0 12px 0; font-size: 16px; text-align: center;">📋 Resumo de Transações - ${selectedYear}</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px;">
-          <div style="background: #e3f2fd; padding: 8px; border-radius: 4px; text-align: center;">
-            <p style="color: #666; margin: 0; font-size: 9px;">Total de Ativos</p>
-            <p style="color: #1976d2; font-size: 14px; font-weight: bold; margin: 2px 0 0 0;">${formatCurrency(annualData.totalAssets)}</p>
-          </div>
-          <div style="background: #fce4ec; padding: 8px; border-radius: 4px; text-align: center;">
-            <p style="color: #666; margin: 0; font-size: 9px;">Total de Passivos</p>
-            <p style="color: #dc004e; font-size: 14px; font-weight: bold; margin: 2px 0 0 0;">${formatCurrency(annualData.totalLiabilities)}</p>
-          </div>
-          <div style="background: #e8f5e9; padding: 8px; border-radius: 4px; text-align: center;">
-            <p style="color: #666; margin: 0; font-size: 9px;">Saldo</p>
-            <p style="color: #2e7d32; font-size: 14px; font-weight: bold; margin: 2px 0 0 0;">${formatCurrency(annualData.saldo)}</p>
-          </div>
-        </div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 8px;">
-          <thead>
-            <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
-              <th style="text-align: left; padding: 4px 5px; font-weight: bold;">Data</th>
-              <th style="text-align: left; padding: 4px 5px; font-weight: bold;">Descrição</th>
-              <th style="text-align: left; padding: 4px 5px; font-weight: bold;">Categoria</th>
-              <th style="text-align: left; padding: 4px 5px; font-weight: bold;">Tipo</th>
-              <th style="text-align: right; padding: 4px 5px; font-weight: bold;">Valor</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-      
-      const displayTransactions = filteredTransactions.slice(0, 25);
-      displayTransactions.forEach(trans => {
-        const color = trans.category === 'Ativo' ? '#2e7d32' : '#dc004e';
-        transHtml += `
-          <tr style="border-bottom: 1px solid #eee;">
-            <td style="padding: 3px 5px;">${trans.month}/${trans.year}</td>
-            <td style="padding: 3px 5px;">${trans.description}</td>
-            <td style="padding: 3px 5px; color: ${color}; font-weight: bold;">${trans.category}</td>
-            <td style="padding: 3px 5px;">${trans.type}</td>
-            <td style="padding: 3px 5px; text-align: right; color: ${color}; font-weight: bold;">${formatCurrency(trans.value)}</td>
-          </tr>
-        `;
-      });
-      
-      if (filteredTransactions.length > 25) {
-        transHtml += `
-          <tr>
-            <td colspan="5" style="text-align: center; padding: 6px; font-style: italic; color: #999; font-size: 8px;">
-              ... e mais ${filteredTransactions.length - 25} transações
-            </td>
-          </tr>
-        `;
-      }
-      
-      transHtml += `
-          </tbody>
-        </table>
-      `;
-      
-      pageNum = await addHtmlAsPage(transHtml, `Resumo de Transações - ${selectedYear}`, pageNum);
-
-      // ===== PÁGINA 6: Resumo de Investimentos =====
+      // ===== PÁGINA 5: Resumo de Investimentos =====
       let invHtml = `
         <h3 style="color: #1976d2; margin: 0 0 12px 0; font-size: 16px; text-align: center;">📊 Resumo de Investimentos</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px;">
@@ -548,6 +492,67 @@ const Reports = () => {
       `;
       
       pageNum = await addHtmlAsPage(invHtml, 'Resumo de Investimentos', pageNum);
+
+      // ===== PÁGINA 6: Resumo de Transações =====
+      let transHtml = `
+        <h3 style="color: #1976d2; margin: 0 0 12px 0; font-size: 16px; text-align: center;">📋 Resumo de Transações - ${selectedYear}</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+          <div style="background: #e3f2fd; padding: 8px; border-radius: 4px; text-align: center;">
+            <p style="color: #666; margin: 0; font-size: 9px;">Total de Ativos</p>
+            <p style="color: #1976d2; font-size: 14px; font-weight: bold; margin: 2px 0 0 0;">${formatCurrency(annualData.totalAssets)}</p>
+          </div>
+          <div style="background: #fce4ec; padding: 8px; border-radius: 4px; text-align: center;">
+            <p style="color: #666; margin: 0; font-size: 9px;">Total de Passivos</p>
+            <p style="color: #dc004e; font-size: 14px; font-weight: bold; margin: 2px 0 0 0;">${formatCurrency(annualData.totalLiabilities)}</p>
+          </div>
+          <div style="background: #e8f5e9; padding: 8px; border-radius: 4px; text-align: center;">
+            <p style="color: #666; margin: 0; font-size: 9px;">Saldo</p>
+            <p style="color: #2e7d32; font-size: 14px; font-weight: bold; margin: 2px 0 0 0;">${formatCurrency(annualData.saldo)}</p>
+          </div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 8px;">
+          <thead>
+            <tr style="background: #f5f5f5; border-bottom: 2px solid #ddd;">
+              <th style="text-align: left; padding: 4px 5px; font-weight: bold;">Data</th>
+              <th style="text-align: left; padding: 4px 5px; font-weight: bold;">Descrição</th>
+              <th style="text-align: left; padding: 4px 5px; font-weight: bold;">Categoria</th>
+              <th style="text-align: left; padding: 4px 5px; font-weight: bold;">Tipo</th>
+              <th style="text-align: right; padding: 4px 5px; font-weight: bold;">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      const displayTransactions = filteredTransactions.slice(0, 25);
+      displayTransactions.forEach(trans => {
+        const color = trans.category === 'Ativo' ? '#2e7d32' : '#dc004e';
+        transHtml += `
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 3px 5px;">${trans.month}/${trans.year}</td>
+            <td style="padding: 3px 5px;">${trans.description}</td>
+            <td style="padding: 3px 5px; color: ${color}; font-weight: bold;">${trans.category}</td>
+            <td style="padding: 3px 5px;">${trans.type}</td>
+            <td style="padding: 3px 5px; text-align: right; color: ${color}; font-weight: bold;">${formatCurrency(trans.value)}</td>
+          </tr>
+        `;
+      });
+      
+      if (filteredTransactions.length > 25) {
+        transHtml += `
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 6px; font-style: italic; color: #999; font-size: 8px;">
+              ... e mais ${filteredTransactions.length - 25} transações
+            </td>
+          </tr>
+        `;
+      }
+      
+      transHtml += `
+          </tbody>
+        </table>
+      `;
+      
+      pageNum = await addHtmlAsPage(transHtml, `Resumo de Transações - ${selectedYear}`, pageNum);
       
       pdf.save(`Relatorio_Financeiro_${selectedYear}.pdf`);
       
@@ -899,163 +904,6 @@ const Reports = () => {
           </Paper>
         </Box>
 
-        {/* Resumo de Transações */}
-        <Box sx={{ mb: 4 }}>
-          <Paper sx={{ 
-            p: 3, 
-            borderRadius: 2,
-            bgcolor: 'background.paper',
-            border: darkMode ? '1px solid #333' : 'none'
-          }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ color: darkMode ? '#64b5f6' : '#1976d2' }}>
-              📋 Resumo de Transações - {selectedYear}
-            </Typography>
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={12} sm={4}>
-                <Card sx={{ 
-                  bgcolor: darkMode ? '#1a237e' : '#e3f2fd',
-                  border: darkMode ? '1px solid #303f9f' : 'none'
-                }}>
-                  <CardContent>
-                    <Typography color={darkMode ? '#90caf9' : 'textSecondary'} gutterBottom variant="body2" sx={{ fontWeight: 500 }}>
-                      Total de Ativos
-                    </Typography>
-                    <Typography variant="h6" color={darkMode ? '#64b5f6' : 'primary'} fontWeight="bold">
-                      {formatCurrency(annualData.totalAssets)}
-                    </Typography>
-                    <Typography variant="caption" color={darkMode ? '#78909c' : 'textSecondary'} sx={{ fontSize: '0.6rem' }}>
-                      (O11 + O25)
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Card sx={{ 
-                  bgcolor: darkMode ? '#4a148c' : '#fce4ec',
-                  border: darkMode ? '1px solid #6a1b9a' : 'none'
-                }}>
-                  <CardContent>
-                    <Typography color={darkMode ? '#ef9a9a' : 'textSecondary'} gutterBottom variant="body2" sx={{ fontWeight: 500 }}>
-                      Total de Passivos
-                    </Typography>
-                    <Typography variant="h6" color={darkMode ? '#ef9a9a' : 'error'} fontWeight="bold">
-                      {formatCurrency(annualData.totalLiabilities)}
-                    </Typography>
-                    <Typography variant="caption" color={darkMode ? '#78909c' : 'textSecondary'} sx={{ fontSize: '0.6rem' }}>
-                      (O25)
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Card sx={{ 
-                  bgcolor: darkMode ? '#1b5e20' : '#e8f5e9',
-                  border: darkMode ? '1px solid #2e7d32' : 'none'
-                }}>
-                  <CardContent>
-                    <Typography color={darkMode ? '#a5d6a7' : 'textSecondary'} gutterBottom variant="body2" sx={{ fontWeight: 500 }}>
-                      Saldo
-                    </Typography>
-                    <Typography variant="h6" color={darkMode ? '#81c784' : 'success'} fontWeight="bold">
-                      {formatCurrency(annualData.saldo)}
-                    </Typography>
-                    <Typography variant="caption" color={darkMode ? '#78909c' : 'textSecondary'} sx={{ fontSize: '0.6rem' }}>
-                      (O11 - O25)
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-
-            {isMobile ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {filteredTransactions.length === 0 ? (
-                  <Typography align="center" sx={{ py: 3 }} color={darkMode ? '#78909c' : 'textSecondary'}>
-                    Nenhuma transação encontrada para {selectedYear}
-                  </Typography>
-                ) : (
-                  filteredTransactions.map((trans) => (
-                    <Card key={trans._id} variant="outlined" sx={{ borderRadius: 2 }}>
-                      <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <Box sx={{ minWidth: 0, pr: 1 }}>
-                            <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'}>
-                              {trans.month}/{trans.year}
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-word' }}>
-                              {trans.description}
-                            </Typography>
-                            <span style={{
-                              color: trans.category === 'Ativo' ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e'),
-                              fontWeight: 'bold',
-                              fontSize: '0.75rem'
-                            }}>
-                              {trans.category}
-                            </span>
-                          </Box>
-                          <Typography
-                            sx={{ fontWeight: 'bold', flexShrink: 0 }}
-                            color={trans.category === 'Ativo' ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e')}
-                          >
-                            {formatCurrency(trans.value)}
-                          </Typography>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
-              </Box>
-            ) : (
-            <TableContainer>
-              <Table size="small">
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: darkMode ? '#2a2a2a' : '#f5f5f5' }}>
-                    <TableCell sx={{ fontWeight: 'bold', color: darkMode ? '#e0e0e0' : 'inherit' }}>Data</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', color: darkMode ? '#e0e0e0' : 'inherit' }}>Descrição</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', color: darkMode ? '#e0e0e0' : 'inherit' }}>Categoria</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', color: darkMode ? '#e0e0e0' : 'inherit' }}>Tipo</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', color: darkMode ? '#e0e0e0' : 'inherit' }} align="right">Valor</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredTransactions.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} align="center" sx={{ py: 3, color: darkMode ? '#78909c' : 'textSecondary' }}>
-                        Nenhuma transação encontrada para {selectedYear}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredTransactions.map((trans) => (
-                      <TableRow key={trans._id} hover>
-                        <TableCell sx={{ color: darkMode ? '#e0e0e0' : 'inherit' }}>{trans.month}/{trans.year}</TableCell>
-                        <TableCell sx={{ color: darkMode ? '#e0e0e0' : 'inherit' }}>{trans.description}</TableCell>
-                        <TableCell>
-                          <span style={{ 
-                            color: trans.category === 'Ativo' ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e'),
-                            fontWeight: 'bold'
-                          }}>
-                            {trans.category}
-                          </span>
-                        </TableCell>
-                        <TableCell sx={{ color: darkMode ? '#e0e0e0' : 'inherit' }}>{trans.type}</TableCell>
-                        <TableCell align="right">
-                          <span style={{ 
-                            color: trans.category === 'Ativo' ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e'),
-                            fontWeight: 'bold'
-                          }}>
-                            {formatCurrency(trans.value)}
-                          </span>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            )}
-          </Paper>
-        </Box>
-
         {/* Resumo de Investimentos */}
         <Box sx={{ mb: 2 }}>
           <Paper sx={{ 
@@ -1117,7 +965,7 @@ const Reports = () => {
               </Grid>
             </Grid>
 
-            {isMobile ? (
+            {isTableMobile ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 {investments.length === 0 ? (
                   <Typography align="center" sx={{ py: 3 }} color={darkMode ? '#78909c' : 'textSecondary'}>
@@ -1197,6 +1045,163 @@ const Reports = () => {
                           </span>
                         </TableCell>
                         <TableCell align="right" sx={{ color: darkMode ? '#e0e0e0' : 'inherit' }}>{inv.annualRate}%</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            )}
+          </Paper>
+        </Box>
+
+        {/* Resumo de Transações */}
+        <Box sx={{ mb: 4 }}>
+          <Paper sx={{ 
+            p: 3, 
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+            border: darkMode ? '1px solid #333' : 'none'
+          }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ color: darkMode ? '#64b5f6' : '#1976d2' }}>
+              📋 Resumo de Transações - {selectedYear}
+            </Typography>
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={4}>
+                <Card sx={{ 
+                  bgcolor: darkMode ? '#1a237e' : '#e3f2fd',
+                  border: darkMode ? '1px solid #303f9f' : 'none'
+                }}>
+                  <CardContent>
+                    <Typography color={darkMode ? '#90caf9' : 'textSecondary'} gutterBottom variant="body2" sx={{ fontWeight: 500 }}>
+                      Total de Ativos
+                    </Typography>
+                    <Typography variant="h6" color={darkMode ? '#64b5f6' : 'primary'} fontWeight="bold">
+                      {formatCurrency(annualData.totalAssets)}
+                    </Typography>
+                    <Typography variant="caption" color={darkMode ? '#78909c' : 'textSecondary'} sx={{ fontSize: '0.6rem' }}>
+                      (O11 + O25)
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Card sx={{ 
+                  bgcolor: darkMode ? '#4a148c' : '#fce4ec',
+                  border: darkMode ? '1px solid #6a1b9a' : 'none'
+                }}>
+                  <CardContent>
+                    <Typography color={darkMode ? '#ef9a9a' : 'textSecondary'} gutterBottom variant="body2" sx={{ fontWeight: 500 }}>
+                      Total de Passivos
+                    </Typography>
+                    <Typography variant="h6" color={darkMode ? '#ef9a9a' : 'error'} fontWeight="bold">
+                      {formatCurrency(annualData.totalLiabilities)}
+                    </Typography>
+                    <Typography variant="caption" color={darkMode ? '#78909c' : 'textSecondary'} sx={{ fontSize: '0.6rem' }}>
+                      (O25)
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Card sx={{ 
+                  bgcolor: darkMode ? '#1b5e20' : '#e8f5e9',
+                  border: darkMode ? '1px solid #2e7d32' : 'none'
+                }}>
+                  <CardContent>
+                    <Typography color={darkMode ? '#a5d6a7' : 'textSecondary'} gutterBottom variant="body2" sx={{ fontWeight: 500 }}>
+                      Saldo
+                    </Typography>
+                    <Typography variant="h6" color={darkMode ? '#81c784' : 'success'} fontWeight="bold">
+                      {formatCurrency(annualData.saldo)}
+                    </Typography>
+                    <Typography variant="caption" color={darkMode ? '#78909c' : 'textSecondary'} sx={{ fontSize: '0.6rem' }}>
+                      (O11 - O25)
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {isTableMobile ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {filteredTransactions.length === 0 ? (
+                  <Typography align="center" sx={{ py: 3 }} color={darkMode ? '#78909c' : 'textSecondary'}>
+                    Nenhuma transação encontrada para {selectedYear}
+                  </Typography>
+                ) : (
+                  filteredTransactions.map((trans) => (
+                    <Card key={trans._id} variant="outlined" sx={{ borderRadius: 2 }}>
+                      <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <Box sx={{ minWidth: 0, pr: 1 }}>
+                            <Typography variant="caption" color={darkMode ? '#a0a0a0' : 'textSecondary'}>
+                              {trans.month}/{trans.year}
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-word' }}>
+                              {trans.description}
+                            </Typography>
+                            <span style={{
+                              color: trans.category === 'Ativo' ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e'),
+                              fontWeight: 'bold',
+                              fontSize: '0.75rem'
+                            }}>
+                              {trans.category}
+                            </span>
+                          </Box>
+                          <Typography
+                            sx={{ fontWeight: 'bold', flexShrink: 0 }}
+                            color={trans.category === 'Ativo' ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e')}
+                          >
+                            {formatCurrency(trans.value)}
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </Box>
+            ) : (
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: darkMode ? '#2a2a2a' : '#f5f5f5' }}>
+                    <TableCell sx={{ fontWeight: 'bold', color: darkMode ? '#e0e0e0' : 'inherit' }}>Data</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', color: darkMode ? '#e0e0e0' : 'inherit' }}>Descrição</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', color: darkMode ? '#e0e0e0' : 'inherit' }}>Categoria</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', color: darkMode ? '#e0e0e0' : 'inherit' }}>Tipo</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', color: darkMode ? '#e0e0e0' : 'inherit' }} align="right">Valor</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredTransactions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center" sx={{ py: 3, color: darkMode ? '#78909c' : 'textSecondary' }}>
+                        Nenhuma transação encontrada para {selectedYear}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredTransactions.map((trans) => (
+                      <TableRow key={trans._id} hover>
+                        <TableCell sx={{ color: darkMode ? '#e0e0e0' : 'inherit' }}>{trans.month}/{trans.year}</TableCell>
+                        <TableCell sx={{ color: darkMode ? '#e0e0e0' : 'inherit' }}>{trans.description}</TableCell>
+                        <TableCell>
+                          <span style={{ 
+                            color: trans.category === 'Ativo' ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e'),
+                            fontWeight: 'bold'
+                          }}>
+                            {trans.category}
+                          </span>
+                        </TableCell>
+                        <TableCell sx={{ color: darkMode ? '#e0e0e0' : 'inherit' }}>{trans.type}</TableCell>
+                        <TableCell align="right">
+                          <span style={{ 
+                            color: trans.category === 'Ativo' ? (darkMode ? '#81c784' : '#2e7d32') : (darkMode ? '#ef9a9a' : '#dc004e'),
+                            fontWeight: 'bold'
+                          }}>
+                            {formatCurrency(trans.value)}
+                          </span>
+                        </TableCell>
                       </TableRow>
                     ))
                   )}
